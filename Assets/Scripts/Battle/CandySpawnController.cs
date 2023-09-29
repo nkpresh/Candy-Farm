@@ -1,12 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using CandFarmEnums;
 using Models;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class CandySpawnController : MonoBehaviour
 {
@@ -16,13 +13,19 @@ public class CandySpawnController : MonoBehaviour
 
     [SerializeField]
     CandySO[] candySOs;
+
+    private float spawnTimer = 0;
+    private float gravity = 1;
     CampaignStage StageData;
+
+    public bool isGameOver = false;
     public IObjectPool<CandyItem> candyItemPool;
+
+    public event Action OnCandyFinished;
     private void Awake()
     {
         candyItemPool = new ObjectPool<CandyItem>(CreateCandy, OnGet, OnRelease, OnDestroyCandy, maxSize: 10);
-
-
+        StartCandyTimer();
     }
 
     private CandyItem CreateCandy()
@@ -34,6 +37,32 @@ public class CandySpawnController : MonoBehaviour
         return newCandy;
     }
 
+    void StartCandyTimer()
+    {
+        InvokeRepeating(nameof(Count), 0, 1);
+    }
+
+    void Count()
+    {
+        if (isGameOver)
+        {
+            CancelInvoke("Count");
+        }
+        spawnTimer++;
+        if (spawnTimer == 7)
+        {
+            IncreaseGravity();
+            spawnTimer = 0;
+        }
+    }
+
+    void IncreaseGravity()
+    {
+        if (gravity >= 7) return;
+        gravity += 1;
+        print(gravity);
+
+    }
     private void OnGet(CandyItem candyItem)
     {
         var gameCandies = StageData.battleCandies;
@@ -55,9 +84,11 @@ public class CandySpawnController : MonoBehaviour
             candyType = so.candyType,
             sprite = so.candyImage
         });
+        candyItem.GetComponent<Rigidbody2D>().gravityScale = gravity;
         if (gameCandies.Count <= 0)
         {
-            CancelInvoke();
+            if (OnCandyFinished != null)
+                OnCandyFinished();
         }
 
     }
@@ -67,37 +98,39 @@ public class CandySpawnController : MonoBehaviour
         candyItem.gameObject.SetActive(false);
     }
 
-    private void OnDestroyCandy(CandyItem candyItem)
+    public void OnDestroyCandy(CandyItem candyItem)
     {
         Destroy(candyItem.gameObject);
     }
-    public float GetHorizontalBounds()
+    private float GetHorizontalBounds()
     {
         float hSize = gameObject.GetComponent<SpriteRenderer>().bounds.size.x;
         return hSize;
     }
 
-    internal void updateGameData(CampaignStage stageData)
+    internal void LaodCandyData(CampaignStage stageData)
     {
         this.StageData = stageData;
     }
 
-    public void SpawnCandy()
+    private void SpawnCandy()
     {
         candyItemPool.Get();
     }
 
-    void StartSpawningCandies()
+    public void StartSpawningCandies()
     {
-        
+        InvokeRepeating(nameof(SpawnCandy), 1, 1);
     }
 
-    void StopSpawningCandies()
+    public void StopSpawningCandies()
     {
-
-    }
-
-    void SpeedupCandySpawning(){
-        
+        isGameOver = true;
+        CancelInvoke(nameof(SpawnCandy));
+        var candyItems = FindObjectsByType<CandyItem>(FindObjectsSortMode.None);
+        foreach (CandyItem item in candyItems)
+        {
+            item.gameObject.SetActive(false);
+        }
     }
 }

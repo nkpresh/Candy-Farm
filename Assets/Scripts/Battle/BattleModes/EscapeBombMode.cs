@@ -5,14 +5,9 @@ using CandFarmEnums;
 
 public class EscapeBombMode : BattleModeBase
 {
-    public void IntializeBattleData(CampaignStage stageData)
-    {
-
-    }
-
-
     public override void OnCandyDropped(CandyItem candyItem)
     {
+        if (battleManager.isGameOver) return;
         if (candyItem.candyCaught == true)
         {
             if (candyItem.candyType == CandyType.Bomb)
@@ -27,16 +22,12 @@ public class EscapeBombMode : BattleModeBase
                 battleManager.LooseHealth();
             }
         }
+
         spawner.candyItemPool.Release(candyItem);
     }
 
     public override void UpdateGamePlay()
     {
-        
-    }
-
-    private void spawnCandy()
-    {
-        spawner.SpawnCandy();
+        spawner.StartSpawningCandies();
     }
 }

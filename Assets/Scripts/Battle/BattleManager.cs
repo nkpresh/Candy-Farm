@@ -9,6 +9,8 @@ public class BattleManager : MonoBehaviour
 
     InGamePlayerDetails inGamePlayer;
     public CampaignStage stageData;
+    public bool isGameOver = false;
+
     private void Awake()
     {
         stageData = CampaignDataManager.Instance.GetCurrentStage();
@@ -21,8 +23,6 @@ public class BattleManager : MonoBehaviour
         inGamePlayer = new InGamePlayerDetails();
         inGamePlayer.SetupPlayer(100, 100);
     }
-
-
 
     public InGamePlayerDetails GetInGamePlayer()
     {
@@ -44,7 +44,9 @@ public class BattleManager : MonoBehaviour
 
     public void OnGameOver()
     {
-
+        isGameOver = true;
+        battleMode.OnGameOver();
+        print("ok then");
     }
 }
 

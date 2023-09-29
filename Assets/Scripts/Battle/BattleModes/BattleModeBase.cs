@@ -23,21 +23,23 @@ public class BattleModeBase : MonoBehaviour
             LoadStageData(currentStage);
         }
         UpdateGamePlay();
+        spawner.OnCandyFinished += battleManager.OnGameOver;
     }
-
     public virtual void LoadStageData(CampaignStage stageData)
     {
         currentStage = stageData;
-        spawner.updateGameData(stageData);
+        spawner.LaodCandyData(stageData);
     }
-
     public virtual void UpdateGamePlay()
     {
 
     }
-
     public virtual void OnCandyDropped(CandyItem candyItem)
     {
 
+    }
+    public void OnGameOver()
+    {
+        spawner.StopSpawningCandies();
     }
 }

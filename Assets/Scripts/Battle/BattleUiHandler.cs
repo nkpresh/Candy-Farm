@@ -32,7 +32,6 @@ public class BattleUiHandler : MonoBehaviour
 
     public void updateHealthProgress()
     {
-        print(battleManager.GetInGamePlayer().currentHp);
         float healthPrgress = battleManager.GetInGamePlayer().currentHp / battleManager.GetInGamePlayer().maxHp;
         healthProgressUi.value = healthPrgress;
     }
